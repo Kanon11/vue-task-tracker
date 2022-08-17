@@ -1,12 +1,21 @@
 <template>
   <div class="container">
-    <HeaderComponent title="Task Tracker" :showAddTask="showAddTask" @main-toggle="toggleButton()"></HeaderComponent>
+    <HeaderComponent
+      title="Task Tracker"
+      :showAddTask="showAddTask"
+      @main-toggle="toggleButton()"
+    ></HeaderComponent>
     <add-task @add-task="AddTask($event)" v-if="showAddTask"></add-task>
-    <tasks-component :tasks="taskList" @main-delete="DeleteTask($event)" @main-toggle="toggleRemider($event)"></tasks-component>
+    <tasks-component
+      :tasks="taskList"
+      @main-delete="DeleteTask($event)"
+      @main-toggle="toggleRemider($event)"
+    ></tasks-component>
   </div>
 </template>
 
 <script>
+import axios from "axios";
 import HeaderComponent from "./components/Header.vue";
 import TasksComponent from "./components/Tasks.vue";
 import AddTask from "./components/AddTask.vue";
@@ -15,55 +24,77 @@ export default {
   components: {
     HeaderComponent,
     TasksComponent,
-    AddTask
+    AddTask,
   },
   data() {
     return {
       taskList: [],
-      showAddTask:true,
-      buttonColoer:'green',
-      btntitle:'Add Task'
+      showAddTask: true,
+      buttonColoer: "green",
+      btntitle: "Add Task",
     };
   },
-  methods:{
-    DeleteTask(id){
-      if(confirm("Are you sure!!!"))
-      this.taskList=this.taskList.filter((task)=>task.id!==id);
+  methods: {
+    async DeleteTask(id) {
+      if (confirm("Are you sure!!!"))
+        try {
+          await axios
+            .post(`http://localhost:3000/tasks/delete`, { id: id })
+            .then((response) => {
+              if (response.data.statuscode == 200) {
+                this.getAllTask();
+              } else {
+                alert("delete is not success, try another time");
+              }
+            });
+        } catch (error) {
+          alert(error);
+        }
     },
-    toggleRemider(id){
-      // console.log(id);
-      this.taskList=this.taskList.map((task)=>task.id===id?{...task,reminder:!task.reminder}:task)
+    async toggleRemider(id) {
+      await axios
+        .post(`http://localhost:3000/tasks/toggle`, { id: id })
+        .then((response) => {
+          if (response.data.statuscode == 200) {
+            this.getAllTask();
+          } else {
+            alert("toggle failed");
+          }
+        });
     },
-    AddTask(data){
-      console.log(data);
+    async getAllTask() {
+      try {
+        const gettaskListUrl = `http://localhost:3000/tasks`;
+        axios.get(gettaskListUrl).then((response) => {
+          if (response.data.statuscode == 200) {
+            this.taskList = response.data.data;
+          }
+        });
+      } catch (e) {
+        alert(e);
+      }
     },
-    toggleButton(){
-      this.showAddTask=!this.showAddTask;
-
-    }
-  }
-  ,
+    async AddTask(data) {
+      try {
+        await axios
+          .post(`http://localhost:3000/tasks/create`, data)
+          .then((response) => {
+            if (response.data.statuscode == 200) {
+              this.getAllTask();
+            } else {
+              alert("Task is not inserted");
+            }
+          });
+      } catch (error) {
+        alert(error);
+      }
+    },
+    toggleButton() {
+      this.showAddTask = !this.showAddTask;
+    },
+  },
   created() {
-    this.taskList = [
-      {
-        id: "1",
-        text: "Doctors Appointment",
-        day: "March 5th at 2:30pm",
-        reminder: true,
-      },
-      {
-        id: "2",
-        text: "Meeting with boss",
-        day: "March 6th at 1:30pm",
-        reminder: true,
-      },
-      {
-        id: "3",
-        text: "Food shopping",
-        day: "March 7th at 2:00pm",
-        reminder: false,
-      },
-    ];
+    this.getAllTask();
   },
 };
 </script>

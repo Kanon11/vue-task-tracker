@@ -13,7 +13,7 @@ export default {
   props: {
     tasks: Array,
   },
-  emits:['main-delete','main-toggle'],
+  // emits:['main-delete','main-toggle'],
   methods:{
     td(id){
         this.$emit('main-delete',id);

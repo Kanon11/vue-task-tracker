@@ -21,7 +21,7 @@ export default {
         this.$emit("main-toggle");
     }
   },
-  emits:['main-toggle']
+  // emits:['main-toggle']
 };
 </script>
 
