@@ -62,7 +62,7 @@ export default {
           }
         });
     },
-    async getAllTask() {
+    async getAllTask() { //kc
       try {
         const gettaskListUrl = `http://localhost:3000/tasks`;
         axios.get(gettaskListUrl).then((response) => {
